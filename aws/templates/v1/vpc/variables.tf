@@ -1,0 +1,14 @@
+variable "region" {
+  type        = string
+  description = "The AWS region to deploy to, e.g., us-east-1"
+}
+
+variable "cidr" {
+  type        = string
+  description = "The CIDR block to use for the VPC, e.g., 10.0.0.0/16"
+}
+
+variable "vpc" {
+  type        = string
+  description = "The name of the VPC to deploy"
+}

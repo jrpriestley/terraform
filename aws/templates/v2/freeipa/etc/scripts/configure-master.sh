@@ -1,0 +1,1 @@
+chmod 600 /home/ec2-user/.ssh/id_rsa
