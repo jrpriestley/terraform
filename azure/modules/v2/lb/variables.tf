@@ -36,3 +36,7 @@ variable "resource_group" {
 variable "sku" {
   type = string
 }
+
+variable "tags" {
+  type = map(string)
+}

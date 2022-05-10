@@ -137,7 +137,7 @@ data "azurerm_virtual_network" "vnet" {
   name                = split("/", each.value)[1]
 }
 
-resource "azurerm_network_security_rule" "nsgr-custom" {
+resource "azurerm_network_security_rule" "custom" {
   for_each = { for k, v in local.rules_custom : format("%s_%s_%s", v.nsg, v.direction, v.priority) => v }
 
   resource_group_name          = each.value.resource_group

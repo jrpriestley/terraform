@@ -63,6 +63,14 @@ resource "azurerm_lb" "lb" {
     private_ip_address_version    = var.frontend_ip_configuration.private_ip_address_version != null ? replace(var.frontend_ip_configuration.private_ip_address_version, "ipv4", "IPv4") : null
     subnet_id                     = var.frontend_ip_configuration.subnet != null ? data.azurerm_subnet.snet[0].id : null
   }
+
+  tags = merge(
+    {
+      terraform_managed = "true"
+    },
+    var.tags
+  )
+
 }
 
 resource "azurerm_lb_backend_address_pool" "lb_pool" {

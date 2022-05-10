@@ -7,11 +7,11 @@ locals {
       }
     ]
   ]))
-  rules_intra = toset(flatten([
+  rules_intra_inbound = toset(flatten([
     for k, v in var.network_security_groups : {
       nsg            = v.name
       resource_group = v.resource_group
-      description    = format("allow any from same subnet")
+      name           = "allow any from intra inbound"
       priority       = 100
       direction      = "Inbound"
       access         = "Allow"
@@ -20,7 +20,22 @@ locals {
       to_port        = "*"
       source         = lookup(local.rules_intra_map, v.name)
       destination    = lookup(local.rules_intra_map, v.name)
-    } if v.allow_same_security_group_traffic == true
+    } if v.allow_intra_inbound == true
+  ]))
+  rules_intra_outbound = toset(flatten([
+    for k, v in var.network_security_groups : {
+      nsg            = v.name
+      resource_group = v.resource_group
+      name           = "allow any to intra outbound"
+      priority       = 100
+      direction      = "Outbound"
+      access         = "Allow"
+      protocol       = "*"
+      from_port      = "*"
+      to_port        = "*"
+      source         = lookup(local.rules_intra_map, v.name)
+      destination    = lookup(local.rules_intra_map, v.name)
+    } if v.allow_intra_outbound == true
   ]))
   rules_intra_obj = flatten([
     for k, v in local.nsg_snets : {
@@ -71,19 +86,19 @@ resource "azurerm_network_security_group" "nsg" {
   }
 }
 
-resource "azurerm_network_security_rule" "nsgr-deny_implicit" {
+resource "azurerm_network_security_rule" "deny_implicit_inbound" {
   depends_on = [
     azurerm_network_security_group.nsg,
   ]
 
-  for_each = { for k, v in var.network_security_groups : v.name => v if v.deny_implicit_traffic == true }
+  for_each = { for k, v in var.network_security_groups : format("%s_deny_implicit_inbound", v.name) => v if v.deny_implicit_inbound == true }
 
   resource_group_name         = each.value.resource_group
-  network_security_group_name = each.key
-  name                        = "deny implicit traffic"
+  network_security_group_name = each.value.name
+  name                        = "deny implicit traffic inbound"
   priority                    = 4096
   direction                   = "Inbound"
-  access                      = "deny"
+  access                      = "Deny"
   protocol                    = "*"
   source_port_range           = "*"
   destination_port_range      = "*"
@@ -91,16 +106,36 @@ resource "azurerm_network_security_rule" "nsgr-deny_implicit" {
   destination_address_prefix  = "*"
 }
 
-resource "azurerm_network_security_rule" "nsgr-intra" {
+resource "azurerm_network_security_rule" "deny_implicit_outbound" {
   depends_on = [
     azurerm_network_security_group.nsg,
   ]
 
-  for_each = { for k, v in local.rules_intra : format("%s_intra", v.nsg) => v }
+  for_each = { for k, v in var.network_security_groups : format("%s_deny_implicit_outbound", v.name) => v if v.deny_implicit_outbound == true }
+
+  resource_group_name         = each.value.resource_group
+  network_security_group_name = each.value.name
+  name                        = "deny implicit traffic outbound"
+  priority                    = 4096
+  direction                   = "Outbound"
+  access                      = "Deny"
+  protocol                    = "*"
+  source_port_range           = "*"
+  destination_port_range      = "*"
+  source_address_prefix       = "*"
+  destination_address_prefix  = "*"
+}
+
+resource "azurerm_network_security_rule" "allow_intra_inbound" {
+  depends_on = [
+    azurerm_network_security_group.nsg,
+  ]
+
+  for_each = { for k, v in local.rules_intra_inbound : format("%s_allow_intra_inbound", v.nsg) => v }
 
   resource_group_name          = each.value.resource_group
   network_security_group_name  = each.value.nsg
-  name                         = each.value.description
+  name                         = each.value.name
   priority                     = each.value.priority
   direction                    = each.value.direction
   access                       = each.value.access
@@ -111,7 +146,27 @@ resource "azurerm_network_security_rule" "nsgr-intra" {
   destination_address_prefixes = each.value.destination
 }
 
-resource "azurerm_subnet_network_security_group_association" "nsga" {
+resource "azurerm_network_security_rule" "allow_intra_outbound" {
+  depends_on = [
+    azurerm_network_security_group.nsg,
+  ]
+
+  for_each = { for k, v in local.rules_intra_outbound : format("%s_allow_intra_outbound", v.nsg) => v }
+
+  resource_group_name          = each.value.resource_group
+  network_security_group_name  = each.value.nsg
+  name                         = each.value.name
+  priority                     = each.value.priority
+  direction                    = each.value.direction
+  access                       = each.value.access
+  protocol                     = each.value.protocol
+  source_port_range            = each.value.from_port
+  destination_port_range       = each.value.to_port
+  source_address_prefixes      = each.value.source
+  destination_address_prefixes = each.value.destination
+}
+
+resource "azurerm_subnet_network_security_group_association" "assoc" {
   for_each = { for k, v in local.nsg_snets : format("%s_%s", v.snet, v.nsg) => v }
 
   network_security_group_id = azurerm_network_security_group.nsg[each.value.nsg].id

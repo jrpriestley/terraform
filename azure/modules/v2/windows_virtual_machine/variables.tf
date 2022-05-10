@@ -9,15 +9,14 @@ variable "virtual_machines" {
           version   = string
         }
       )
-      name            = string
-      resource_group  = string
-      password        = string
-      public_ip       = string
-      size            = string
-      subnet          = string
-      username        = string
-      virtual_network = string
-      tags            = map(string)
+      name           = string
+      resource_group = string
+      password       = string
+      public_ip      = string
+      size           = string
+      subnet         = string
+      username       = string
+      tags           = map(string)
     }
   ))
 }

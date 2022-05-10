@@ -1,13 +1,3 @@
-locals {
-  snets = toset(flatten([
-    for v in var.virtual_machines : {
-      resource_group  = v.resource_group
-      subnet          = v.subnet
-      virtual_network = v.virtual_network
-    }
-  ]))
-}
-
 data "azurerm_public_ip" "pip" {
   for_each = { for k, v in var.virtual_machines : v.public_ip => v if v.public_ip != null }
 
@@ -22,11 +12,11 @@ data "azurerm_resource_group" "rg" {
 }
 
 data "azurerm_subnet" "snet" {
-  for_each = { for k, v in local.snets : format("%s_%s", v.virtual_network, v.subnet) => v }
+  for_each = toset([for k, v in var.virtual_machines : v.subnet])
 
-  resource_group_name  = each.value.resource_group
-  name                 = each.value.subnet
-  virtual_network_name = each.value.virtual_network
+  resource_group_name  = split("/", each.key)[0]
+  name                 = split("/", each.key)[2]
+  virtual_network_name = split("/", each.key)[1]
 }
 
 resource "azurerm_network_interface" "nic" {
@@ -38,13 +28,14 @@ resource "azurerm_network_interface" "nic" {
 
   ip_configuration {
     name                          = format("%s-ipc-01", each.key)
-    subnet_id                     = data.azurerm_subnet.snet[format("%s_%s", each.value.virtual_network, each.value.subnet)].id
+    subnet_id                     = data.azurerm_subnet.snet[each.value.subnet].id
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = each.value.public_ip == null ? null : data.azurerm_public_ip.pip[each.value.public_ip].id
   }
 
   lifecycle {
     ignore_changes = [
+      enable_accelerated_networking,
       location,
     ]
   }
