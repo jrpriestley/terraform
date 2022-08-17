@@ -18,7 +18,7 @@ module "subnet" {
   subnets = [
     {
       name                    = "${var.vpc}-private-01"
-      availability_zone       = "us-east-1a"
+      availability_zone       = "${var.region}a"
       cidr                    = cidrsubnet(var.cidr, 24 - split("/", var.cidr)[1], 64)
       create_ngw              = false
       map_public_ip_on_launch = false
@@ -27,7 +27,7 @@ module "subnet" {
     },
     {
       name                    = "${var.vpc}-private-02"
-      availability_zone       = "us-east-1b"
+      availability_zone       = "${var.region}b"
       cidr                    = cidrsubnet(var.cidr, 24 - split("/", var.cidr)[1], 65)
       create_ngw              = false
       map_public_ip_on_launch = false
@@ -36,7 +36,7 @@ module "subnet" {
     },
     {
       name                    = "${var.vpc}-public-01"
-      availability_zone       = "us-east-1a"
+      availability_zone       = "${var.region}a"
       cidr                    = cidrsubnet(var.cidr, 24 - split("/", var.cidr)[1], 0)
       create_ngw              = true
       map_public_ip_on_launch = true
@@ -45,7 +45,7 @@ module "subnet" {
     },
     {
       name                    = "${var.vpc}-public-02"
-      availability_zone       = "us-east-1b"
+      availability_zone       = "${var.region}b"
       cidr                    = cidrsubnet(var.cidr, 24 - split("/", var.cidr)[1], 1)
       create_ngw              = true
       map_public_ip_on_launch = true
@@ -131,7 +131,7 @@ module "security_group_rules" {
       security_group = "${var.vpc}-private"
       ingress = [
         {
-          description = "allow all from ${var.vpc}-public security group"
+          description = "allow any from ${var.vpc}-public security group"
           from_port   = 0
           to_port     = 0
           protocol    = "all"
@@ -152,7 +152,7 @@ module "security_group_rules" {
       security_group = "${var.vpc}-public"
       ingress = [
         {
-          description = "allow all from ${var.vpc}-private security group"
+          description = "allow any from ${var.vpc}-private security group"
           from_port   = 0
           to_port     = 0
           protocol    = "all"

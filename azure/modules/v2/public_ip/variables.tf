@@ -5,6 +5,7 @@ variable "public_ips" {
       name              = string
       resource_group    = string
       sku               = string
+      availability_zone = optional(string)
       tags              = map(string)
     }
   ))

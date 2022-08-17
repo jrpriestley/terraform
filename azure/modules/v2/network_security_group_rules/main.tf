@@ -27,7 +27,7 @@ locals {
         for k3, v3 in v2 : {
           nsg            = v1.security_group
           resource_group = v1.resource_group
-          description    = v3.description
+          description    = replace(v3.description, "/", "_")
           priority       = v3.priority
           direction      = replace(replace(k2, "egress", "Outbound"), "ingress", "Inbound")
           access         = title(v3.access)
@@ -142,7 +142,7 @@ resource "azurerm_network_security_rule" "custom" {
 
   resource_group_name          = each.value.resource_group
   network_security_group_name  = each.value.nsg
-  name                         = each.value.description
+  name                         = replace(each.value.description, " ", "_")
   priority                     = each.value.priority
   direction                    = each.value.direction
   access                       = each.value.access

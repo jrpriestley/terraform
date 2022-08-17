@@ -37,4 +37,10 @@ resource "azurerm_virtual_network_gateway" "vng-wo-conn-01" {
     },
     var.tags
   )
+
+  lifecycle {
+    ignore_changes = [
+      location,
+    ]
+  }
 }

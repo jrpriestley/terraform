@@ -9,9 +9,9 @@ resource "azurerm_public_ip" "pip" {
 
   name                = each.key
   resource_group_name = each.value.resource_group
-  allocation_method   = title(each.value.allocation_method)
   location            = data.azurerm_resource_group.rg[each.value.resource_group].location
-  availability_zone   = "No-Zone"
+  allocation_method   = title(each.value.allocation_method)
+  availability_zone   = each.value.availability_zone != null ? title(each.value.availability_zone) : "No-Zone"
   sku                 = title(each.value.sku)
 
   tags = merge(

@@ -11,7 +11,7 @@ locals {
     for k, v in var.network_security_groups : {
       nsg            = v.name
       resource_group = v.resource_group
-      name           = "allow any from intra inbound"
+      name           = "allow_any_from_intra_inbound"
       priority       = 100
       direction      = "Inbound"
       access         = "Allow"
@@ -26,7 +26,7 @@ locals {
     for k, v in var.network_security_groups : {
       nsg            = v.name
       resource_group = v.resource_group
-      name           = "allow any to intra outbound"
+      name           = "allow_any_to_intra_outbound"
       priority       = 100
       direction      = "Outbound"
       access         = "Allow"
@@ -95,7 +95,7 @@ resource "azurerm_network_security_rule" "deny_implicit_inbound" {
 
   resource_group_name         = each.value.resource_group
   network_security_group_name = each.value.name
-  name                        = "deny implicit traffic inbound"
+  name                        = "deny_implicit_traffic_inbound"
   priority                    = 4096
   direction                   = "Inbound"
   access                      = "Deny"
@@ -115,7 +115,7 @@ resource "azurerm_network_security_rule" "deny_implicit_outbound" {
 
   resource_group_name         = each.value.resource_group
   network_security_group_name = each.value.name
-  name                        = "deny implicit traffic outbound"
+  name                        = "deny_implicit_traffic_outbound"
   priority                    = 4096
   direction                   = "Outbound"
   access                      = "Deny"

@@ -24,7 +24,7 @@ resource "azurerm_network_interface" "nic" {
 
   name                = format("%s-nic-01", each.key)
   resource_group_name = each.value.resource_group
-  location            = data.azurerm_resource_group.rg[each.value.resource_group].location
+  location            = each.value.location != null ? each.value.location : data.azurerm_resource_group.rg[each.value.resource_group].location
 
   ip_configuration {
     name                          = format("%s-ipc-01", each.key)
@@ -46,7 +46,7 @@ resource "azurerm_windows_virtual_machine" "vm" {
 
   name                = each.key
   resource_group_name = each.value.resource_group
-  location            = data.azurerm_resource_group.rg[each.value.resource_group].location
+  location            = each.value.location != null ? each.value.location : data.azurerm_resource_group.rg[each.value.resource_group].location
   size                = each.value.size
   admin_username      = each.value.username
   admin_password      = each.value.password

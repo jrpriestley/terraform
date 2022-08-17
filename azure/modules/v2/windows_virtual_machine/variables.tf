@@ -9,6 +9,7 @@ variable "virtual_machines" {
           version   = string
         }
       )
+      location       = optional(string)
       name           = string
       resource_group = string
       password       = string
